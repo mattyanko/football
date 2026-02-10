@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Football Dice Game - Multiplayer</title>
+  <title>Football Dice Game</title>
   <style>
     /* Global reset and layout */
     * {
@@ -29,100 +29,6 @@
       text-align: center;
       margin-bottom: 20px;
       font-size: 24px;
-    }
-
-    /* Lobby screen */
-    .lobby {
-      background: #0d2818;
-      border: 2px solid #2d5a3d;
-      border-radius: 8px;
-      padding: 24px;
-      text-align: center;
-    }
-
-    .lobby h2 {
-      margin-bottom: 20px;
-      font-size: 22px;
-    }
-
-    .lobby-input {
-      width: 100%;
-      padding: 12px;
-      font-size: 18px;
-      border: 2px solid #2d5a3d;
-      border-radius: 8px;
-      background: #1a472a;
-      color: #fff;
-      margin-bottom: 12px;
-      text-align: center;
-      text-transform: uppercase;
-    }
-
-    .lobby-button {
-      width: 100%;
-      padding: 16px;
-      font-size: 18px;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-bottom: 12px;
-    }
-
-    .create-btn {
-      background: #3b82f6;
-      color: white;
-    }
-
-    .join-btn {
-      background: #8b5cf6;
-      color: white;
-    }
-
-    .room-code-display {
-      background: #1a472a;
-      border: 2px solid #4ade80;
-      border-radius: 8px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .room-code-label {
-      font-size: 14px;
-      opacity: 0.8;
-      margin-bottom: 8px;
-    }
-
-    .room-code {
-      font-size: 48px;
-      font-weight: bold;
-      color: #4ade80;
-      letter-spacing: 8px;
-    }
-
-    .waiting-message {
-      font-size: 16px;
-      opacity: 0.8;
-      margin-top: 16px;
-    }
-
-    .api-key-setup {
-      background: #7f1d1d;
-      border: 2px solid #dc2626;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-
-    .api-key-setup h3 {
-      margin-bottom: 12px;
-      color: #fbbf24;
-    }
-
-    .api-key-setup p {
-      font-size: 14px;
-      margin-bottom: 8px;
-      line-height: 1.6;
     }
 
     /* Score display */
@@ -330,8 +236,8 @@
       border-color: #dc2626;
     }
 
-    .section-header.my-role {
-      box-shadow: 0 0 16px rgba(74, 222, 128, 0.4);
+    .section-header.inactive {
+      opacity: 0.5;
     }
 
     .cards-container {
@@ -346,7 +252,6 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      margin-bottom: 12px;
     }
 
     .card {
@@ -400,55 +305,6 @@
       font-size: 11px;
       opacity: 0.7;
       font-style: italic;
-    }
-
-    /* Ready button */
-    .ready-button {
-      width: 100%;
-      padding: 14px;
-      font-size: 18px;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .ready-button.offense-ready {
-      background: #3b82f6;
-      color: white;
-    }
-
-    .ready-button.defense-ready {
-      background: #dc2626;
-      color: white;
-    }
-
-    .ready-button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .ready-button.confirmed {
-      background: #22c55e;
-      color: white;
-    }
-
-    /* Status messages */
-    .status-message {
-      background: #1a472a;
-      border: 2px solid #4ade80;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 20px;
-      text-align: center;
-      font-size: 16px;
-      font-weight: bold;
-    }
-
-    .status-message.waiting {
-      border-color: #fbbf24;
-      color: #fbbf24;
     }
 
     /* Play button */
@@ -546,248 +402,178 @@
       margin-bottom: 8px;
       color: #fbbf24;
     }
-
-    .hidden {
-      display: none;
-    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>⚡ Football Dice Game ⚡</h1>
 
-    <!-- API Key Setup Notice -->
-    <div id="apiKeyNotice" class="api-key-setup">
-      <h3>⚠️ Setup Required</h3>
-      <p><strong>To enable multiplayer, you need a JSONBin API key:</strong></p>
-      <p>1. Go to <a href="https://jsonbin.io" target="_blank" style="color: #4ade80;">jsonbin.io</a> and sign up (free)</p>
-      <p>2. Get your API key from the dashboard</p>
-      <p>3. Open this HTML file in a text editor</p>
-      <p>4. Find line ~950: <code>const API_KEY = 'YOUR_API_KEY_HERE';</code></p>
-      <p>5. Replace YOUR_API_KEY_HERE with your actual key</p>
-      <p>6. Save and reload this page</p>
-    </div>
-
-    <!-- Lobby Screen -->
-    <div id="lobbyScreen" class="lobby">
-      <h2>Multiplayer Football</h2>
-      
-      <button class="lobby-button create-btn" onclick="createGame()">
-        🎮 Create New Game
-      </button>
-      
-      <div style="margin: 20px 0; opacity: 0.6;">- OR -</div>
-      
-      <input 
-        type="text" 
-        id="joinCodeInput" 
-        class="lobby-input" 
-        placeholder="Enter 4-digit code"
-        maxlength="4"
-      />
-      <button class="lobby-button join-btn" onclick="joinGame()">
-        🔗 Join Game
-      </button>
-
-      <div id="roomCodeDisplay" class="room-code-display hidden">
-        <div class="room-code-label">Share this code with your friend:</div>
-        <div class="room-code" id="roomCode">----</div>
-        <div class="waiting-message">Waiting for opponent to join...</div>
+    <!-- Scoreboard -->
+    <div class="scoreboard">
+      <div class="score-item">
+        <div class="score-label">Player 1</div>
+        <div class="score-value" id="score1">0</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Player 2</div>
+        <div class="score-value" id="score2">0</div>
       </div>
     </div>
 
-    <!-- Game Screen -->
-    <div id="gameScreen" class="hidden">
-      <!-- Scoreboard -->
-      <div class="scoreboard">
-        <div class="score-item">
-          <div class="score-label" id="player1Label">Player 1</div>
-          <div class="score-value" id="score1">0</div>
+    <!-- Game Situation Board -->
+    <div class="situation-board">
+      <div class="situation-grid">
+        <div class="situation-item">
+          <div class="situation-label">Down</div>
+          <div class="situation-value" id="downDisplay">1st</div>
         </div>
-        <div class="score-item">
-          <div class="score-label" id="player2Label">Player 2</div>
-          <div class="score-value" id="score2">0</div>
+        <div class="situation-item">
+          <div class="situation-label">Yards to 1st</div>
+          <div class="situation-value" id="yardsToFirst">10</div>
+        </div>
+        <div class="situation-item">
+          <div class="situation-label">Field Position</div>
+          <div class="situation-value" id="fieldPosition">0</div>
+        </div>
+        <div class="situation-item">
+          <div class="situation-label">Yards to TD</div>
+          <div class="situation-value critical" id="yardsToTD">40</div>
         </div>
       </div>
-
-      <!-- Status Message -->
-      <div id="statusMessage" class="status-message hidden">
-        Waiting for opponent...
+      <div class="possession-info" id="possessionInfo">
+        Player 1 has possession
       </div>
+    </div>
 
-      <!-- Game Situation Board -->
-      <div class="situation-board">
-        <div class="situation-grid">
-          <div class="situation-item">
-            <div class="situation-label">Down</div>
-            <div class="situation-value" id="downDisplay">1st</div>
+    <!-- Game Over Message (hidden initially) -->
+    <div id="gameOver" class="game-over" style="display: none;">
+      <h2 id="winnerText"></h2>
+      <p>Press Reset Game to play again</p>
+    </div>
+
+    <!-- Visual Field -->
+    <div class="visual-field">
+      <div class="field-header">Field Visualization</div>
+      <div class="field-track">
+        <div class="field-markers">
+          <div class="field-marker"><span class="marker-label">0</span></div>
+          <div class="field-marker"><span class="marker-label">10</span></div>
+          <div class="field-marker"><span class="marker-label">20</span></div>
+          <div class="field-marker"><span class="marker-label">30</span></div>
+          <div class="field-marker"><span class="marker-label">40</span></div>
+        </div>
+        <div class="endzone"></div>
+        <div class="first-down-marker" id="firstDownMarker"></div>
+        <div class="ball-marker" id="ballMarker">🏈</div>
+      </div>
+    </div>
+
+    <!-- Offense Card Selection -->
+    <div class="card-section">
+      <div class="section-header offense" id="offenseHeader">
+        🏈 OFFENSE - Player 1
+      </div>
+      <div class="cards-container">
+        <div class="cards">
+          <div class="card" onclick="selectOffenseCard('run', 'power')" id="card-run-power">
+            <div class="card-header">
+              <span class="card-name">Power Run</span>
+              <span class="card-icon">💪</span>
+            </div>
+            <div class="card-stats">Modifier: +2 | Need: 5+</div>
+            <div class="card-desc">Safe but modest gain</div>
           </div>
-          <div class="situation-item">
-            <div class="situation-label">Yards to 1st</div>
-            <div class="situation-value" id="yardsToFirst">10</div>
+
+          <div class="card" onclick="selectOffenseCard('run', 'sweep')" id="card-run-sweep">
+            <div class="card-header">
+              <span class="card-name">Sweep</span>
+              <span class="card-icon">⚡</span>
+            </div>
+            <div class="card-stats">Modifier: +4 | Need: 7+</div>
+            <div class="card-desc">Risky but explosive</div>
           </div>
-          <div class="situation-item">
-            <div class="situation-label">Field Position</div>
-            <div class="situation-value" id="fieldPosition">0</div>
+
+          <div class="card" onclick="selectOffenseCard('pass', 'short')" id="card-pass-short">
+            <div class="card-header">
+              <span class="card-name">Short Pass</span>
+              <span class="card-icon">🎯</span>
+            </div>
+            <div class="card-stats">Modifier: +3 | Need: 6+</div>
+            <div class="card-desc">Balanced approach</div>
           </div>
-          <div class="situation-item">
-            <div class="situation-label">Yards to TD</div>
-            <div class="situation-value critical" id="yardsToTD">40</div>
+
+          <div class="card" onclick="selectOffenseCard('pass', 'deep')" id="card-pass-deep">
+            <div class="card-header">
+              <span class="card-name">Deep Pass</span>
+              <span class="card-icon">🚀</span>
+            </div>
+            <div class="card-stats">Modifier: +6 | Need: 9+</div>
+            <div class="card-desc">Home run ball!</div>
           </div>
-        </div>
-        <div class="possession-info" id="possessionInfo">
-          Waiting to start...
         </div>
       </div>
+    </div>
 
-      <!-- Game Over Message (hidden initially) -->
-      <div id="gameOver" class="game-over hidden">
-        <h2 id="winnerText"></h2>
-        <p>Game complete!</p>
+    <!-- Defense Card Selection -->
+    <div class="card-section">
+      <div class="section-header defense" id="defenseHeader">
+        🛡️ DEFENSE - Player 2
       </div>
-
-      <!-- Visual Field -->
-      <div class="visual-field">
-        <div class="field-header">Field Visualization</div>
-        <div class="field-track">
-          <div class="field-markers">
-            <div class="field-marker"><span class="marker-label">0</span></div>
-            <div class="field-marker"><span class="marker-label">10</span></div>
-            <div class="field-marker"><span class="marker-label">20</span></div>
-            <div class="field-marker"><span class="marker-label">30</span></div>
-            <div class="field-marker"><span class="marker-label">40</span></div>
+      <div class="cards-container">
+        <div class="cards">
+          <div class="card" onclick="selectDefenseCard('contain')" id="card-def-contain">
+            <div class="card-header">
+              <span class="card-name">Contain</span>
+              <span class="card-icon">🧱</span>
+            </div>
+            <div class="card-stats">Defense: +3</div>
+            <div class="card-desc">Solid wall, stops runs</div>
           </div>
-          <div class="endzone"></div>
-          <div class="first-down-marker" id="firstDownMarker"></div>
-          <div class="ball-marker" id="ballMarker">🏈</div>
-        </div>
-      </div>
 
-      <!-- Offense Card Selection -->
-      <div class="card-section">
-        <div class="section-header offense" id="offenseHeader">
-          🏈 OFFENSE - Player 1
-        </div>
-        <div class="cards-container">
-          <div class="cards">
-            <div class="card" onclick="selectOffenseCard('run', 'power')" id="card-run-power">
-              <div class="card-header">
-                <span class="card-name">Power Run</span>
-                <span class="card-icon">💪</span>
-              </div>
-              <div class="card-stats">Modifier: +2 | Need: 5+</div>
-              <div class="card-desc">Safe but modest gain</div>
+          <div class="card" onclick="selectDefenseCard('blitz')" id="card-def-blitz">
+            <div class="card-header">
+              <span class="card-name">Blitz</span>
+              <span class="card-icon">⚔️</span>
             </div>
-
-            <div class="card" onclick="selectOffenseCard('run', 'sweep')" id="card-run-sweep">
-              <div class="card-header">
-                <span class="card-name">Sweep</span>
-                <span class="card-icon">⚡</span>
-              </div>
-              <div class="card-stats">Modifier: +4 | Need: 7+</div>
-              <div class="card-desc">Risky but explosive</div>
-            </div>
-
-            <div class="card" onclick="selectOffenseCard('pass', 'short')" id="card-pass-short">
-              <div class="card-header">
-                <span class="card-name">Short Pass</span>
-                <span class="card-icon">🎯</span>
-              </div>
-              <div class="card-stats">Modifier: +3 | Need: 6+</div>
-              <div class="card-desc">Balanced approach</div>
-            </div>
-
-            <div class="card" onclick="selectOffenseCard('pass', 'deep')" id="card-pass-deep">
-              <div class="card-header">
-                <span class="card-name">Deep Pass</span>
-                <span class="card-icon">🚀</span>
-              </div>
-              <div class="card-stats">Modifier: +6 | Need: 9+</div>
-              <div class="card-desc">Home run ball!</div>
-            </div>
+            <div class="card-stats">Defense: +5</div>
+            <div class="card-desc">All-out pressure!</div>
           </div>
-          <button class="ready-button offense-ready" id="offenseReadyBtn" onclick="confirmOffenseReady()" disabled>
-            Select a Card
-          </button>
-        </div>
-      </div>
 
-      <!-- Defense Card Selection -->
-      <div class="card-section">
-        <div class="section-header defense" id="defenseHeader">
-          🛡️ DEFENSE - Player 2
-        </div>
-        <div class="cards-container">
-          <div class="cards">
-            <div class="card" onclick="selectDefenseCard('contain')" id="card-def-contain">
-              <div class="card-header">
-                <span class="card-name">Contain</span>
-                <span class="card-icon">🧱</span>
-              </div>
-              <div class="card-stats">Defense: +3</div>
-              <div class="card-desc">Solid wall, stops runs</div>
+          <div class="card" onclick="selectDefenseCard('coverage')" id="card-def-coverage">
+            <div class="card-header">
+              <span class="card-name">Coverage</span>
+              <span class="card-icon">👥</span>
             </div>
-
-            <div class="card" onclick="selectDefenseCard('blitz')" id="card-def-blitz">
-              <div class="card-header">
-                <span class="card-name">Blitz</span>
-                <span class="card-icon">⚔️</span>
-              </div>
-              <div class="card-stats">Defense: +5</div>
-              <div class="card-desc">All-out pressure!</div>
-            </div>
-
-            <div class="card" onclick="selectDefenseCard('coverage')" id="card-def-coverage">
-              <div class="card-header">
-                <span class="card-name">Coverage</span>
-                <span class="card-icon">👥</span>
-              </div>
-              <div class="card-stats">Defense: +4</div>
-              <div class="card-desc">Locks down passes</div>
-            </div>
-
-            <div class="card" onclick="selectDefenseCard('prevent')" id="card-def-prevent">
-              <div class="card-header">
-                <span class="card-name">Prevent</span>
-                <span class="card-icon">🚫</span>
-              </div>
-              <div class="card-stats">Defense: +2</div>
-              <div class="card-desc">Bend don't break</div>
-            </div>
+            <div class="card-stats">Defense: +4</div>
+            <div class="card-desc">Locks down passes</div>
           </div>
-          <button class="ready-button defense-ready" id="defenseReadyBtn" onclick="confirmDefenseReady()" disabled>
-            Select a Card
-          </button>
+
+          <div class="card" onclick="selectDefenseCard('prevent')" id="card-def-prevent">
+            <div class="card-header">
+              <span class="card-name">Prevent</span>
+              <span class="card-icon">🚫</span>
+            </div>
+            <div class="card-stats">Defense: +2</div>
+            <div class="card-desc">Bend don't break</div>
+          </div>
         </div>
       </div>
+    </div>
 
-      <button class="reset-btn" onclick="leaveGame()">🚪 Leave Game</button>
+    <button class="play-button" id="playBtn" onclick="executePlay()" disabled>
+      Both Players Must Select Cards
+    </button>
 
-      <!-- Play Log -->
-      <div class="log-container">
-        <div class="log-title">📋 Play-by-Play Log</div>
-        <div id="playLog"></div>
-      </div>
+    <button class="reset-btn" onclick="resetGame()">🔄 Reset Game</button>
+
+    <!-- Play Log -->
+    <div class="log-container">
+      <div class="log-title">📋 Play-by-Play Log</div>
+      <div id="playLog"></div>
     </div>
   </div>
 
   <script>
-    // ========================================
-    // CONFIGURATION - REPLACE WITH YOUR API KEY
-    // ========================================
-    
-    const BIN_ID = '698aaf20ae596e708f1f04bc';
-    const API_KEY = '$2a$10$721mBXbhDM.r421Nxp27M.wEacWpLYhbQI0uA4ctGTpCx5nxi/sB.'; // <-- PUT YOUR API KEY HERE
-    const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-    
-    // Check if API key is set
-    if (API_KEY === 'YOUR_API_KEY_HERE') {
-      console.warn('⚠️ API KEY NOT SET - Multiplayer will not work until you add your JSONBin API key');
-    } else {
-      // Hide the notice if API key is configured
-      document.getElementById('apiKeyNotice').style.display = 'none';
-    }
-    
     // ========================================
     // Game State
     // ========================================
@@ -795,34 +581,66 @@
     // Play card definitions
     const OFFENSE_CARDS = {
       run: {
-        power: { name: 'Power Run', modifier: 2, minRoll: 5, icon: '💪' },
-        sweep: { name: 'Sweep', modifier: 4, minRoll: 7, icon: '⚡' }
+        power: {
+          name: 'Power Run',
+          modifier: 2,
+          minRoll: 5,
+          icon: '💪'
+        },
+        sweep: {
+          name: 'Sweep',
+          modifier: 4,
+          minRoll: 7,
+          icon: '⚡'
+        }
       },
       pass: {
-        short: { name: 'Short Pass', modifier: 3, minRoll: 6, icon: '🎯' },
-        deep: { name: 'Deep Pass', modifier: 6, minRoll: 9, icon: '🚀' }
+        short: {
+          name: 'Short Pass',
+          modifier: 3,
+          minRoll: 6,
+          icon: '🎯'
+        },
+        deep: {
+          name: 'Deep Pass',
+          modifier: 6,
+          minRoll: 9,
+          icon: '🚀'
+        }
       }
     };
 
+    // Defense card definitions
     const DEFENSE_CARDS = {
-      contain: { name: 'Contain', modifier: 3, icon: '🧱' },
-      blitz: { name: 'Blitz', modifier: 5, icon: '⚔️' },
-      coverage: { name: 'Coverage', modifier: 4, icon: '👥' },
-      prevent: { name: 'Prevent', modifier: 2, icon: '🚫' }
+      contain: {
+        name: 'Contain',
+        modifier: 3,
+        icon: '🧱'
+      },
+      blitz: {
+        name: 'Blitz',
+        modifier: 5,
+        icon: '⚔️'
+      },
+      coverage: {
+        name: 'Coverage',
+        modifier: 4,
+        icon: '👥'
+      },
+      prevent: {
+        name: 'Prevent',
+        modifier: 2,
+        icon: '🚫'
+      }
     };
 
+    // Game constants
     const FIELD_LENGTH = 40;
     const WINNING_SCORE = 3;
     const YARDS_FOR_FIRST_DOWN = 10;
 
-    // Local player state
-    let myPlayerNumber = null;
-    let myRoomCode = null;
-    let pollInterval = null;
-    let selectedCardLocally = null; // Track local selection before confirming
-
-    // Game state (synced from server)
-    let gameState = {
+    // Current game state
+    let state = {
       player1Score: 0,
       player2Score: 0,
       currentYardLine: 0,
@@ -831,281 +649,44 @@
       yardsToFirstDown: YARDS_FOR_FIRST_DOWN,
       firstDownLine: YARDS_FOR_FIRST_DOWN,
       gameOver: false,
-      player1Card: null,
-      player2Card: null,
-      player1Ready: false,
-      player2Ready: false,
-      lastPlayResult: null,
-      playLog: []
+      selectedPlayType: null,
+      selectedOffenseCard: null,
+      selectedDefenseCard: null
     };
-
-    // ========================================
-    // Server Communication
-    // ========================================
-
-    async function createGame() {
-      if (API_KEY === 'YOUR_API_KEY_HERE') {
-        alert('Please add your JSONBin API key first! See the red box above for instructions.');
-        return;
-      }
-
-      // Generate 4-digit room code
-      const roomCode = Math.floor(1000 + Math.random() * 9000).toString();
-      myRoomCode = roomCode;
-      myPlayerNumber = 1;
-
-      // Initialize game in JSONBin
-      const initialData = await fetchBinData();
-      if (!initialData.games) {
-        initialData.games = {};
-      }
-      
-      initialData.games[roomCode] = {
-        player1Connected: true,
-        player2Connected: false,
-        gameState: {
-          player1Score: 0,
-          player2Score: 0,
-          currentYardLine: 0,
-          offensePlayer: 1,
-          currentDown: 1,
-          yardsToFirstDown: YARDS_FOR_FIRST_DOWN,
-          firstDownLine: YARDS_FOR_FIRST_DOWN,
-          gameOver: false,
-          player1Card: null,
-          player2Card: null,
-          player1Ready: false,
-          player2Ready: false,
-          lastPlayResult: null,
-          playLog: []
-        }
-      };
-
-      await updateBinData(initialData);
-
-      // Show room code
-      document.getElementById('roomCode').textContent = roomCode;
-      document.getElementById('roomCodeDisplay').classList.remove('hidden');
-
-      // Start polling for player 2
-      startPolling();
-    }
-
-    async function joinGame() {
-      if (API_KEY === 'YOUR_API_KEY_HERE') {
-        alert('Please add your JSONBin API key first! See the red box above for instructions.');
-        return;
-      }
-
-      const roomCode = document.getElementById('joinCodeInput').value.trim();
-      if (!roomCode || roomCode.length !== 4) {
-        alert('Please enter a valid 4-digit room code');
-        return;
-      }
-
-      myRoomCode = roomCode;
-      myPlayerNumber = 2;
-
-      // Check if game exists
-      const data = await fetchBinData();
-      if (!data.games || !data.games[roomCode]) {
-        alert('Game not found! Check the code and try again.');
-        return;
-      }
-
-      // Mark player 2 as connected
-      data.games[roomCode].player2Connected = true;
-      await updateBinData(data);
-
-      // Switch to game screen
-      showGameScreen();
-      startPolling();
-    }
-
-    async function fetchBinData() {
-      try {
-        const response = await fetch(API_URL + '/latest', {
-          headers: {
-            'X-Master-Key': API_KEY
-          }
-        });
-        const result = await response.json();
-        return result.record || { games: {} };
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        return { games: {} };
-      }
-    }
-
-    async function updateBinData(data) {
-      try {
-        const response = await fetch(API_URL, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': API_KEY
-          },
-          body: JSON.stringify(data)
-        });
-        
-        if (!response.ok) {
-          console.error('Failed to update bin:', await response.text());
-        }
-      } catch (error) {
-        console.error('Error updating data:', error);
-      }
-    }
-
-    function startPolling() {
-      // Poll every 1 second
-      pollInterval = setInterval(async () => {
-        const data = await fetchBinData();
-        const room = data.games?.[myRoomCode];
-        
-        if (!room) return;
-
-        // Check if both players connected
-        if (room.player1Connected && room.player2Connected) {
-          showGameScreen();
-        }
-
-        // Update game state
-        gameState = room.gameState;
-        updateUI();
-
-        // Auto-execute play if both players ready
-        if (gameState.player1Ready && gameState.player2Ready && !gameState.gameOver) {
-          if (myPlayerNumber === 1) {
-            // Only player 1 executes to avoid double execution
-            await executePlay();
-          }
-        }
-      }, 1000);
-    }
-
-    function showGameScreen() {
-      document.getElementById('lobbyScreen').classList.add('hidden');
-      document.getElementById('gameScreen').classList.remove('hidden');
-      
-      // Update player labels
-      if (myPlayerNumber === 1) {
-        document.getElementById('player1Label').textContent = 'You';
-        document.getElementById('player2Label').textContent = 'Opponent';
-      } else {
-        document.getElementById('player1Label').textContent = 'Opponent';
-        document.getElementById('player2Label').textContent = 'You';
-      }
-
-      addLog('🎮 Game started! Player 1 is offense, Player 2 is defense.');
-      addLog('🏈 4 downs to get 10 yards. First to 3 TDs wins!');
-    }
-
-    function leaveGame() {
-      if (pollInterval) {
-        clearInterval(pollInterval);
-      }
-      
-      // Reload page to go back to lobby
-      location.reload();
-    }
-
-    // ========================================
-    // Card Selection
-    // ========================================
-
-    function selectOffenseCard(playType, cardType) {
-      if (gameState.gameOver) return;
-      if (myPlayerNumber !== gameState.offensePlayer) return;
-      if (gameState.player1Ready) return; // Already confirmed
-
-      // Deselect all offense cards
-      document.querySelectorAll('[id^="card-run-"], [id^="card-pass-"]').forEach(card => {
-        card.classList.remove('selected');
-      });
-
-      // Select the chosen card
-      document.getElementById(`card-${playType}-${cardType}`).classList.add('selected');
-      selectedCardLocally = { playType, cardType };
-
-      // Enable ready button
-      const readyBtn = document.getElementById('offenseReadyBtn');
-      readyBtn.disabled = false;
-      readyBtn.textContent = '✅ I\'m Ready!';
-    }
-
-    function selectDefenseCard(cardType) {
-      if (gameState.gameOver) return;
-      const defensePlayer = gameState.offensePlayer === 1 ? 2 : 1;
-      if (myPlayerNumber !== defensePlayer) return;
-      if (gameState.player2Ready) return; // Already confirmed
-
-      // Deselect all defense cards
-      document.querySelectorAll('[id^="card-def-"]').forEach(card => {
-        card.classList.remove('selected');
-      });
-
-      // Select the chosen card
-      document.getElementById(`card-def-${cardType}`).classList.add('selected');
-      selectedCardLocally = { cardType };
-
-      // Enable ready button
-      const readyBtn = document.getElementById('defenseReadyBtn');
-      readyBtn.disabled = false;
-      readyBtn.textContent = '✅ I\'m Ready!';
-    }
-
-    async function confirmOffenseReady() {
-      if (!selectedCardLocally) return;
-
-      // Update server
-      const data = await fetchBinData();
-      data.games[myRoomCode].gameState.player1Card = selectedCardLocally;
-      data.games[myRoomCode].gameState.player1Ready = true;
-      await updateBinData(data);
-
-      // Update button
-      const readyBtn = document.getElementById('offenseReadyBtn');
-      readyBtn.classList.add('confirmed');
-      readyBtn.disabled = true;
-      readyBtn.textContent = '✓ Ready! Waiting for defense...';
-    }
-
-    async function confirmDefenseReady() {
-      if (!selectedCardLocally) return;
-
-      // Update server
-      const data = await fetchBinData();
-      data.games[myRoomCode].gameState.player2Card = selectedCardLocally;
-      data.games[myRoomCode].gameState.player2Ready = true;
-      await updateBinData(data);
-
-      // Update button
-      const readyBtn = document.getElementById('defenseReadyBtn');
-      readyBtn.classList.add('confirmed');
-      readyBtn.disabled = true;
-      readyBtn.textContent = '✓ Ready! Waiting for offense...';
-    }
 
     // ========================================
     // Utility Functions
     // ========================================
 
+    /**
+     * Roll two six-sided dice
+     * @returns {Array} [die1, die2]
+     */
     function rollDice() {
       const die1 = Math.floor(Math.random() * 6) + 1;
       const die2 = Math.floor(Math.random() * 6) + 1;
       return [die1, die2];
     }
 
+    /**
+     * Clamp a value between min and max
+     */
     function clamp(value, min, max) {
       return Math.min(Math.max(value, min), max);
     }
 
+    /**
+     * Get ordinal string for down (1st, 2nd, 3rd, 4th)
+     */
     function getDownString(down) {
       const suffixes = ['th', 'st', 'nd', 'rd'];
       const v = down % 100;
       return down + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
     }
 
+    /**
+     * Add entry to play log
+     */
     function addLog(message, type = 'normal') {
       const logDiv = document.getElementById('playLog');
       const entry = document.createElement('div');
@@ -1123,275 +704,328 @@
       logDiv.insertBefore(entry, logDiv.firstChild);
     }
 
+    /**
+     * Update ball position on visual field
+     */
     function updateBallPosition() {
       const ball = document.getElementById('ballMarker');
-      const percentage = (gameState.currentYardLine / FIELD_LENGTH) * 100;
+      const percentage = (state.currentYardLine / FIELD_LENGTH) * 100;
       ball.style.left = `${percentage}%`;
     }
 
+    /**
+     * Update first down marker position
+     */
     function updateFirstDownMarker() {
       const marker = document.getElementById('firstDownMarker');
-      const percentage = (gameState.firstDownLine / FIELD_LENGTH) * 100;
+      const percentage = (state.firstDownLine / FIELD_LENGTH) * 100;
       marker.style.left = `${percentage}%`;
     }
 
+    /**
+     * Update situation board display
+     */
     function updateSituationBoard() {
-      document.getElementById('downDisplay').textContent = getDownString(gameState.currentDown);
-      document.getElementById('yardsToFirst').textContent = gameState.yardsToFirstDown;
-      document.getElementById('fieldPosition').textContent = gameState.currentYardLine;
-      document.getElementById('yardsToTD').textContent = FIELD_LENGTH - gameState.currentYardLine;
+      document.getElementById('downDisplay').textContent = getDownString(state.currentDown);
+      document.getElementById('yardsToFirst').textContent = state.yardsToFirstDown;
+      document.getElementById('fieldPosition').textContent = state.currentYardLine;
+      document.getElementById('yardsToTD').textContent = FIELD_LENGTH - state.currentYardLine;
       
-      const offensePlayerLabel = gameState.offensePlayer === myPlayerNumber ? 'You' : 'Opponent';
+      const defensePlayer = state.offensePlayer === 1 ? 2 : 1;
       document.getElementById('possessionInfo').textContent = 
-        `${offensePlayerLabel} on offense`;
+        `Player ${state.offensePlayer} has possession`;
     }
 
+    /**
+     * Update UI to reflect current state
+     */
     function updateUI() {
-      document.getElementById('score1').textContent = gameState.player1Score;
-      document.getElementById('score2').textContent = gameState.player2Score;
+      document.getElementById('score1').textContent = state.player1Score;
+      document.getElementById('score2').textContent = state.player2Score;
       
-      // Update headers
-      document.getElementById('offenseHeader').textContent = 
-        `🏈 OFFENSE - ${gameState.offensePlayer === myPlayerNumber ? 'YOU' : 'OPPONENT'}`;
-      const defensePlayer = gameState.offensePlayer === 1 ? 2 : 1;
-      document.getElementById('defenseHeader').textContent = 
-        `🛡️ DEFENSE - ${defensePlayer === myPlayerNumber ? 'YOU' : 'OPPONENT'}`;
-
-      // Highlight my role
-      document.getElementById('offenseHeader').classList.toggle('my-role', gameState.offensePlayer === myPlayerNumber);
-      document.getElementById('defenseHeader').classList.toggle('my-role', defensePlayer === myPlayerNumber);
-
+      const defensePlayer = state.offensePlayer === 1 ? 2 : 1;
+      
+      // Update section headers
+      document.getElementById('offenseHeader').textContent = `🏈 OFFENSE - Player ${state.offensePlayer}`;
+      document.getElementById('defenseHeader').textContent = `🛡️ DEFENSE - Player ${defensePlayer}`;
+      
       updateBallPosition();
       updateFirstDownMarker();
       updateSituationBoard();
+      updatePlayButton();
       updateCardStates();
-      updateReadyButtons();
-      updateStatusMessage();
-
-      // Check for game over
-      if (gameState.gameOver) {
-        const winner = gameState.player1Score >= WINNING_SCORE ? 1 : 2;
-        const winnerLabel = winner === myPlayerNumber ? 'You Win!' : 'Opponent Wins!';
-        document.getElementById('winnerText').textContent = winnerLabel;
-        document.getElementById('gameOver').classList.remove('hidden');
-      }
     }
 
+    /**
+     * Update which cards are enabled/disabled
+     */
     function updateCardStates() {
-      const isOffense = myPlayerNumber === gameState.offensePlayer;
-      const isDefense = !isOffense;
-
-      // Enable/disable offense cards
-      document.querySelectorAll('[id^="card-run-"], [id^="card-pass-"]').forEach(card => {
-        if (isOffense && !gameState.gameOver && !gameState.player1Ready) {
-          card.classList.remove('disabled');
-        } else {
-          card.classList.add('disabled');
-        }
-      });
-
-      // Enable/disable defense cards
-      document.querySelectorAll('[id^="card-def-"]').forEach(card => {
-        if (isDefense && !gameState.gameOver && !gameState.player2Ready) {
-          card.classList.remove('disabled');
-        } else {
-          card.classList.add('disabled');
-        }
-      });
-    }
-
-    function updateReadyButtons() {
-      const offenseBtn = document.getElementById('offenseReadyBtn');
-      const defenseBtn = document.getElementById('defenseReadyBtn');
-
-      // Reset buttons if new play
-      if (!gameState.player1Ready && !gameState.player2Ready) {
-        selectedCardLocally = null;
-        
-        offenseBtn.classList.remove('confirmed');
-        offenseBtn.disabled = true;
-        offenseBtn.textContent = 'Select a Card';
-        
-        defenseBtn.classList.remove('confirmed');
-        defenseBtn.disabled = true;
-        defenseBtn.textContent = 'Select a Card';
-
-        // Clear selections
+      if (state.gameOver) {
         document.querySelectorAll('.card').forEach(card => {
-          card.classList.remove('selected');
+          card.classList.add('disabled');
         });
-      }
-
-      // Update based on ready states
-      if (gameState.player1Ready) {
-        offenseBtn.classList.add('confirmed');
-        offenseBtn.disabled = true;
-        offenseBtn.textContent = '✓ Ready! Waiting for defense...';
-      }
-
-      if (gameState.player2Ready) {
-        defenseBtn.classList.add('confirmed');
-        defenseBtn.disabled = true;
-        defenseBtn.textContent = '✓ Ready! Waiting for offense...';
-      }
-
-      if (gameState.player1Ready && gameState.player2Ready) {
-        offenseBtn.textContent = '⚡ Executing Play...';
-        defenseBtn.textContent = '⚡ Executing Play...';
-      }
-    }
-
-    function updateStatusMessage() {
-      const statusEl = document.getElementById('statusMessage');
-      
-      if (gameState.gameOver) {
-        statusEl.classList.add('hidden');
         return;
       }
+      
+      document.querySelectorAll('.card').forEach(card => {
+        card.classList.remove('disabled');
+      });
+    }
 
-      const isOffense = myPlayerNumber === gameState.offensePlayer;
-      const myReady = isOffense ? gameState.player1Ready : gameState.player2Ready;
-      const opponentReady = isOffense ? gameState.player2Ready : gameState.player1Ready;
-
-      if (myReady && opponentReady) {
-        statusEl.textContent = '⚡ Both players ready! Executing play...';
-        statusEl.classList.remove('hidden', 'waiting');
-      } else if (myReady && !opponentReady) {
-        statusEl.textContent = '✅ Waiting for opponent to confirm...';
-        statusEl.classList.remove('hidden');
-        statusEl.classList.add('waiting');
-      } else if (!myReady && opponentReady) {
-        statusEl.textContent = '⏳ Opponent is ready! Your turn...';
-        statusEl.classList.remove('hidden');
-        statusEl.classList.add('waiting');
-      } else {
-        statusEl.classList.add('hidden');
+    /**
+     * Update play button text and state
+     */
+    function updatePlayButton() {
+      const btn = document.getElementById('playBtn');
+      
+      if (state.gameOver) {
+        btn.disabled = true;
+        btn.textContent = 'Game Over';
+        return;
       }
+      
+      if (state.selectedOffenseCard && state.selectedDefenseCard) {
+        btn.disabled = false;
+        btn.textContent = `⚡ Execute Play!`;
+      } else if (state.selectedOffenseCard) {
+        btn.disabled = true;
+        btn.textContent = 'Waiting for Defense...';
+      } else if (state.selectedDefenseCard) {
+        btn.disabled = true;
+        btn.textContent = 'Waiting for Offense...';
+      } else {
+        btn.disabled = true;
+        btn.textContent = 'Both Players Must Select Cards';
+      }
+    }
+
+    /**
+     * Select an offense card
+     */
+    function selectOffenseCard(playType, cardType) {
+      if (state.gameOver) return;
+      
+      // Deselect all offense cards
+      document.querySelectorAll('[id^="card-run-"], [id^="card-pass-"]').forEach(card => {
+        card.classList.remove('selected');
+      });
+      
+      // Select the chosen card
+      state.selectedPlayType = playType;
+      state.selectedOffenseCard = cardType;
+      document.getElementById(`card-${playType}-${cardType}`).classList.add('selected');
+      
+      updatePlayButton();
+    }
+
+    /**
+     * Select a defense card
+     */
+    function selectDefenseCard(cardType) {
+      if (state.gameOver) return;
+      
+      // Deselect all defense cards
+      document.querySelectorAll('[id^="card-def-"]').forEach(card => {
+        card.classList.remove('selected');
+      });
+      
+      // Select the chosen card
+      state.selectedDefenseCard = cardType;
+      document.getElementById(`card-def-${cardType}`).classList.add('selected');
+      
+      updatePlayButton();
+    }
+
+    /**
+     * Clear all card selections
+     */
+    function clearSelections() {
+      state.selectedPlayType = null;
+      state.selectedOffenseCard = null;
+      state.selectedDefenseCard = null;
+      
+      document.querySelectorAll('.card').forEach(card => {
+        card.classList.remove('selected');
+      });
+    }
+
+    /**
+     * Reset downs and yards for new possession
+     */
+    function resetDowns() {
+      state.currentDown = 1;
+      state.yardsToFirstDown = YARDS_FOR_FIRST_DOWN;
+      state.firstDownLine = Math.min(state.currentYardLine + YARDS_FOR_FIRST_DOWN, FIELD_LENGTH);
+    }
+
+    /**
+     * Switch offense and defense roles (turnover)
+     */
+    function turnover() {
+      state.offensePlayer = state.offensePlayer === 1 ? 2 : 1;
+      state.currentYardLine = 0;
+      clearSelections();
+      resetDowns();
+      
+      addLog(`--- TURNOVER ON DOWNS: Player ${state.offensePlayer} now on offense ---`, 'drive-end');
+    }
+
+    /**
+     * Score a touchdown
+     */
+    function scoreTouchdown() {
+      if (state.offensePlayer === 1) {
+        state.player1Score++;
+      } else {
+        state.player2Score++;
+      }
+      
+      addLog(`🏆 TOUCHDOWN! Player ${state.offensePlayer} scores! (Score: ${state.player1Score}-${state.player2Score})`, 'touchdown');
+      
+      // Check for winner
+      if (state.player1Score >= WINNING_SCORE || state.player2Score >= WINNING_SCORE) {
+        endGame();
+      } else {
+        // Switch possession after touchdown
+        state.offensePlayer = state.offensePlayer === 1 ? 2 : 1;
+        state.currentYardLine = 0;
+        clearSelections();
+        resetDowns();
+        addLog(`--- Player ${state.offensePlayer} now on offense ---`, 'drive-end');
+      }
+    }
+
+    /**
+     * End the game and declare winner
+     */
+    function endGame() {
+      state.gameOver = true;
+      const winner = state.player1Score >= WINNING_SCORE ? 1 : 2;
+      
+      document.getElementById('winnerText').textContent = `Player ${winner} Wins!`;
+      document.getElementById('gameOver').style.display = 'block';
+      
+      addLog(`🎉 GAME OVER: Player ${winner} wins ${state.player1Score}-${state.player2Score}!`, 'touchdown');
+      updateUI();
     }
 
     // ========================================
     // Play Execution
     // ========================================
 
-    async function executePlay() {
-      if (!gameState.player1Card || !gameState.player2Card) return;
-      if (!gameState.player1Ready || !gameState.player2Ready) return;
-      if (gameState.gameOver) return;
-
-      const offenseCard = OFFENSE_CARDS[gameState.player1Card.playType][gameState.player1Card.cardType];
-      const defenseCard = DEFENSE_CARDS[gameState.player2Card.cardType];
-
+    /**
+     * Execute the selected play
+     */
+    function executePlay() {
+      if (state.gameOver || !state.selectedOffenseCard || !state.selectedDefenseCard) return;
+      
+      const offenseCard = OFFENSE_CARDS[state.selectedPlayType][state.selectedOffenseCard];
+      const defenseCard = DEFENSE_CARDS[state.selectedDefenseCard];
+      
       // Roll dice
       const [die1, die2] = rollDice();
       const diceTotal = die1 + die2;
-
-      // Calculate yards
+      
+      // Calculate yards: (dice total + offense modifier) - defense modifier
       const rawYards = diceTotal + offenseCard.modifier - defenseCard.modifier;
       const yards = clamp(rawYards, 0, FIELD_LENGTH);
-
+      
       // Log the play
-      addLog(`${getDownString(gameState.currentDown)} & ${gameState.yardsToFirstDown}: ${offenseCard.icon} ${offenseCard.name} vs ${defenseCard.icon} ${defenseCard.name}`);
+      addLog(`${getDownString(state.currentDown)} & ${state.yardsToFirstDown}: ${offenseCard.icon} ${offenseCard.name} vs ${defenseCard.icon} ${defenseCard.name}`);
       addLog(`Rolled ${die1}+${die2}=${diceTotal} | +${offenseCard.modifier} OFF | -${defenseCard.modifier} DEF | Net: ${rawYards} yards`);
-
-      let newGameState = { ...gameState };
-
+      
       // Check if minimum roll was met
       if (diceTotal < offenseCard.minRoll) {
         addLog(`⚠️ Roll too low! Needed ${offenseCard.minRoll}+ but got ${diceTotal}. Play failed!`);
-        newGameState.currentDown++;
         
-        if (newGameState.currentDown > 4) {
-          addLog(`--- TURNOVER ON DOWNS: Player ${newGameState.offensePlayer === 1 ? 2 : 1} now on offense ---`, 'drive-end');
-          newGameState.offensePlayer = newGameState.offensePlayer === 1 ? 2 : 1;
-          newGameState.currentYardLine = 0;
-          newGameState.currentDown = 1;
-          newGameState.yardsToFirstDown = YARDS_FOR_FIRST_DOWN;
-          newGameState.firstDownLine = YARDS_FOR_FIRST_DOWN;
+        // Advance down
+        state.currentDown++;
+        
+        if (state.currentDown > 4) {
+          turnover();
+        } else {
+          clearSelections();
         }
       } else if (rawYards <= 0) {
         addLog('Defense stuffed the play! No gain.');
-        newGameState.currentDown++;
         
-        if (newGameState.currentDown > 4) {
-          addLog(`--- TURNOVER ON DOWNS: Player ${newGameState.offensePlayer === 1 ? 2 : 1} now on offense ---`, 'drive-end');
-          newGameState.offensePlayer = newGameState.offensePlayer === 1 ? 2 : 1;
-          newGameState.currentYardLine = 0;
-          newGameState.currentDown = 1;
-          newGameState.yardsToFirstDown = YARDS_FOR_FIRST_DOWN;
-          newGameState.firstDownLine = YARDS_FOR_FIRST_DOWN;
+        // Advance down
+        state.currentDown++;
+        
+        if (state.currentDown > 4) {
+          turnover();
+        } else {
+          clearSelections();
         }
       } else {
-        // Successful play
-        newGameState.currentYardLine = Math.min(newGameState.currentYardLine + yards, FIELD_LENGTH);
-        newGameState.yardsToFirstDown -= yards;
+        // Successful play - advance the ball
+        state.currentYardLine = Math.min(state.currentYardLine + yards, FIELD_LENGTH);
+        state.yardsToFirstDown -= yards;
         
-        addLog(`✅ Gained ${yards} yards! Now at ${newGameState.currentYardLine} yard line.`);
-
+        addLog(`✅ Gained ${yards} yards! Now at ${state.currentYardLine} yard line.`);
+        
         // Check for touchdown
-        if (newGameState.currentYardLine >= FIELD_LENGTH) {
-          if (newGameState.offensePlayer === 1) {
-            newGameState.player1Score++;
-          } else {
-            newGameState.player2Score++;
-          }
-          
-          addLog(`🏆 TOUCHDOWN! Player ${newGameState.offensePlayer} scores! (Score: ${newGameState.player1Score}-${newGameState.player2Score})`, 'touchdown');
-
-          if (newGameState.player1Score >= WINNING_SCORE || newGameState.player2Score >= WINNING_SCORE) {
-            newGameState.gameOver = true;
-            const winner = newGameState.player1Score >= WINNING_SCORE ? 1 : 2;
-            addLog(`🎉 GAME OVER: Player ${winner} wins ${newGameState.player1Score}-${newGameState.player2Score}!`, 'touchdown');
-          } else {
-            newGameState.offensePlayer = newGameState.offensePlayer === 1 ? 2 : 1;
-            newGameState.currentYardLine = 0;
-            newGameState.currentDown = 1;
-            newGameState.yardsToFirstDown = YARDS_FOR_FIRST_DOWN;
-            newGameState.firstDownLine = YARDS_FOR_FIRST_DOWN;
-            addLog(`--- Player ${newGameState.offensePlayer} now on offense ---`, 'drive-end');
-          }
+        if (state.currentYardLine >= FIELD_LENGTH) {
+          scoreTouchdown();
         } 
-        else if (newGameState.yardsToFirstDown <= 0) {
+        // Check for first down
+        else if (state.yardsToFirstDown <= 0) {
           addLog(`🎯 FIRST DOWN! Chains reset.`, 'first-down');
-          newGameState.currentDown = 1;
-          newGameState.yardsToFirstDown = YARDS_FOR_FIRST_DOWN;
-          newGameState.firstDownLine = Math.min(newGameState.currentYardLine + YARDS_FOR_FIRST_DOWN, FIELD_LENGTH);
+          resetDowns();
+          clearSelections();
         } 
+        // Just advance the down
         else {
-          newGameState.currentDown++;
+          state.currentDown++;
           
-          if (newGameState.currentDown > 4) {
-            addLog(`--- TURNOVER ON DOWNS: Player ${newGameState.offensePlayer === 1 ? 2 : 1} now on offense ---`, 'drive-end');
-            newGameState.offensePlayer = newGameState.offensePlayer === 1 ? 2 : 1;
-            newGameState.currentYardLine = 0;
-            newGameState.currentDown = 1;
-            newGameState.yardsToFirstDown = YARDS_FOR_FIRST_DOWN;
-            newGameState.firstDownLine = YARDS_FOR_FIRST_DOWN;
+          if (state.currentDown > 4) {
+            turnover();
+          } else {
+            clearSelections();
           }
         }
       }
+      
+      updateUI();
+    }
 
-      // Clear cards and ready states
-      newGameState.player1Card = null;
-      newGameState.player2Card = null;
-      newGameState.player1Ready = false;
-      newGameState.player2Ready = false;
-
-      // Update server
-      const data = await fetchBinData();
-      data.games[myRoomCode].gameState = newGameState;
-      await updateBinData(data);
-
-      // Update local state
-      gameState = newGameState;
+    /**
+     * Reset the game to initial state
+     */
+    function resetGame() {
+      state = {
+        player1Score: 0,
+        player2Score: 0,
+        currentYardLine: 0,
+        offensePlayer: 1,
+        currentDown: 1,
+        yardsToFirstDown: YARDS_FOR_FIRST_DOWN,
+        firstDownLine: YARDS_FOR_FIRST_DOWN,
+        gameOver: false,
+        selectedPlayType: null,
+        selectedOffenseCard: null,
+        selectedDefenseCard: null
+      };
+      
+      clearSelections();
+      
+      document.getElementById('playLog').innerHTML = '';
+      document.getElementById('gameOver').style.display = 'none';
+      
+      addLog('🎮 New game started! Player 1 starts on offense.');
       updateUI();
     }
 
     // ========================================
-    // Initialize
+    // Initialize Game
     // ========================================
-
+    
+    // Start the game on page load
     window.onload = function() {
-      // Nothing to do - waiting for user to create/join
+      addLog('🎮 Game ready! Player 1 is offense, Player 2 is defense.');
+      addLog('🏈 4 downs to get 10 yards. Field is 40 yards. First to 3 TDs wins!');
+      addLog('💡 Both players choose cards, then execute the play!');
+      updateUI();
     };
   </script>
 </body>
