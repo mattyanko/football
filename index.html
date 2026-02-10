@@ -346,6 +346,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
+      margin-bottom: 12px;
     }
 
     .card {
@@ -399,6 +400,38 @@
       font-size: 11px;
       opacity: 0.7;
       font-style: italic;
+    }
+
+    /* Ready button */
+    .ready-button {
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .ready-button.offense-ready {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .ready-button.defense-ready {
+      background: #dc2626;
+      color: white;
+    }
+
+    .ready-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .ready-button.confirmed {
+      background: #22c55e;
+      color: white;
     }
 
     /* Status messages */
@@ -530,7 +563,7 @@
       <p>1. Go to <a href="https://jsonbin.io" target="_blank" style="color: #4ade80;">jsonbin.io</a> and sign up (free)</p>
       <p>2. Get your API key from the dashboard</p>
       <p>3. Open this HTML file in a text editor</p>
-      <p>4. Find line ~850: <code>const API_KEY = 'YOUR_API_KEY_HERE';</code></p>
+      <p>4. Find line ~950: <code>const API_KEY = 'YOUR_API_KEY_HERE';</code></p>
       <p>5. Replace YOUR_API_KEY_HERE with your actual key</p>
       <p>6. Save and reload this page</p>
     </div>
@@ -673,6 +706,9 @@
               <div class="card-desc">Home run ball!</div>
             </div>
           </div>
+          <button class="ready-button offense-ready" id="offenseReadyBtn" onclick="confirmOffenseReady()" disabled>
+            Select a Card
+          </button>
         </div>
       </div>
 
@@ -719,6 +755,9 @@
               <div class="card-desc">Bend don't break</div>
             </div>
           </div>
+          <button class="ready-button defense-ready" id="defenseReadyBtn" onclick="confirmDefenseReady()" disabled>
+            Select a Card
+          </button>
         </div>
       </div>
 
@@ -780,6 +819,7 @@
     let myPlayerNumber = null;
     let myRoomCode = null;
     let pollInterval = null;
+    let selectedCardLocally = null; // Track local selection before confirming
 
     // Game state (synced from server)
     let gameState = {
@@ -793,6 +833,8 @@
       gameOver: false,
       player1Card: null,
       player2Card: null,
+      player1Ready: false,
+      player2Ready: false,
       lastPlayResult: null,
       playLog: []
     };
@@ -832,6 +874,8 @@
           gameOver: false,
           player1Card: null,
           player2Card: null,
+          player1Ready: false,
+          player2Ready: false,
           lastPlayResult: null,
           playLog: []
         }
@@ -929,8 +973,8 @@
         gameState = room.gameState;
         updateUI();
 
-        // Auto-execute play if both cards selected
-        if (gameState.player1Card && gameState.player2Card && !gameState.gameOver) {
+        // Auto-execute play if both players ready
+        if (gameState.player1Ready && gameState.player2Ready && !gameState.gameOver) {
           if (myPlayerNumber === 1) {
             // Only player 1 executes to avoid double execution
             await executePlay();
@@ -969,9 +1013,10 @@
     // Card Selection
     // ========================================
 
-    async function selectOffenseCard(playType, cardType) {
+    function selectOffenseCard(playType, cardType) {
       if (gameState.gameOver) return;
       if (myPlayerNumber !== gameState.offensePlayer) return;
+      if (gameState.player1Ready) return; // Already confirmed
 
       // Deselect all offense cards
       document.querySelectorAll('[id^="card-run-"], [id^="card-pass-"]').forEach(card => {
@@ -980,17 +1025,19 @@
 
       // Select the chosen card
       document.getElementById(`card-${playType}-${cardType}`).classList.add('selected');
+      selectedCardLocally = { playType, cardType };
 
-      // Update server
-      const data = await fetchBinData();
-      data.games[myRoomCode].gameState.player1Card = { playType, cardType };
-      await updateBinData(data);
+      // Enable ready button
+      const readyBtn = document.getElementById('offenseReadyBtn');
+      readyBtn.disabled = false;
+      readyBtn.textContent = '✅ I\'m Ready!';
     }
 
-    async function selectDefenseCard(cardType) {
+    function selectDefenseCard(cardType) {
       if (gameState.gameOver) return;
       const defensePlayer = gameState.offensePlayer === 1 ? 2 : 1;
       if (myPlayerNumber !== defensePlayer) return;
+      if (gameState.player2Ready) return; // Already confirmed
 
       // Deselect all defense cards
       document.querySelectorAll('[id^="card-def-"]').forEach(card => {
@@ -999,11 +1046,44 @@
 
       // Select the chosen card
       document.getElementById(`card-def-${cardType}`).classList.add('selected');
+      selectedCardLocally = { cardType };
+
+      // Enable ready button
+      const readyBtn = document.getElementById('defenseReadyBtn');
+      readyBtn.disabled = false;
+      readyBtn.textContent = '✅ I\'m Ready!';
+    }
+
+    async function confirmOffenseReady() {
+      if (!selectedCardLocally) return;
 
       // Update server
       const data = await fetchBinData();
-      data.games[myRoomCode].gameState.player2Card = { cardType };
+      data.games[myRoomCode].gameState.player1Card = selectedCardLocally;
+      data.games[myRoomCode].gameState.player1Ready = true;
       await updateBinData(data);
+
+      // Update button
+      const readyBtn = document.getElementById('offenseReadyBtn');
+      readyBtn.classList.add('confirmed');
+      readyBtn.disabled = true;
+      readyBtn.textContent = '✓ Ready! Waiting for defense...';
+    }
+
+    async function confirmDefenseReady() {
+      if (!selectedCardLocally) return;
+
+      // Update server
+      const data = await fetchBinData();
+      data.games[myRoomCode].gameState.player2Card = selectedCardLocally;
+      data.games[myRoomCode].gameState.player2Ready = true;
+      await updateBinData(data);
+
+      // Update button
+      const readyBtn = document.getElementById('defenseReadyBtn');
+      readyBtn.classList.add('confirmed');
+      readyBtn.disabled = true;
+      readyBtn.textContent = '✓ Ready! Waiting for offense...';
     }
 
     // ========================================
@@ -1085,6 +1165,7 @@
       updateFirstDownMarker();
       updateSituationBoard();
       updateCardStates();
+      updateReadyButtons();
       updateStatusMessage();
 
       // Check for game over
@@ -1102,7 +1183,7 @@
 
       // Enable/disable offense cards
       document.querySelectorAll('[id^="card-run-"], [id^="card-pass-"]').forEach(card => {
-        if (isOffense && !gameState.gameOver && !gameState.player1Card) {
+        if (isOffense && !gameState.gameOver && !gameState.player1Ready) {
           card.classList.remove('disabled');
         } else {
           card.classList.add('disabled');
@@ -1111,12 +1192,53 @@
 
       // Enable/disable defense cards
       document.querySelectorAll('[id^="card-def-"]').forEach(card => {
-        if (isDefense && !gameState.gameOver && !gameState.player2Card) {
+        if (isDefense && !gameState.gameOver && !gameState.player2Ready) {
           card.classList.remove('disabled');
         } else {
           card.classList.add('disabled');
         }
       });
+    }
+
+    function updateReadyButtons() {
+      const offenseBtn = document.getElementById('offenseReadyBtn');
+      const defenseBtn = document.getElementById('defenseReadyBtn');
+
+      // Reset buttons if new play
+      if (!gameState.player1Ready && !gameState.player2Ready) {
+        selectedCardLocally = null;
+        
+        offenseBtn.classList.remove('confirmed');
+        offenseBtn.disabled = true;
+        offenseBtn.textContent = 'Select a Card';
+        
+        defenseBtn.classList.remove('confirmed');
+        defenseBtn.disabled = true;
+        defenseBtn.textContent = 'Select a Card';
+
+        // Clear selections
+        document.querySelectorAll('.card').forEach(card => {
+          card.classList.remove('selected');
+        });
+      }
+
+      // Update based on ready states
+      if (gameState.player1Ready) {
+        offenseBtn.classList.add('confirmed');
+        offenseBtn.disabled = true;
+        offenseBtn.textContent = '✓ Ready! Waiting for defense...';
+      }
+
+      if (gameState.player2Ready) {
+        defenseBtn.classList.add('confirmed');
+        defenseBtn.disabled = true;
+        defenseBtn.textContent = '✓ Ready! Waiting for offense...';
+      }
+
+      if (gameState.player1Ready && gameState.player2Ready) {
+        offenseBtn.textContent = '⚡ Executing Play...';
+        defenseBtn.textContent = '⚡ Executing Play...';
+      }
     }
 
     function updateStatusMessage() {
@@ -1128,16 +1250,20 @@
       }
 
       const isOffense = myPlayerNumber === gameState.offensePlayer;
-      const myCard = isOffense ? gameState.player1Card : gameState.player2Card;
-      const opponentCard = isOffense ? gameState.player2Card : gameState.player1Card;
+      const myReady = isOffense ? gameState.player1Ready : gameState.player2Ready;
+      const opponentReady = isOffense ? gameState.player2Ready : gameState.player1Ready;
 
-      if (myCard && !opponentCard) {
-        statusEl.textContent = '✅ Card selected! Waiting for opponent...';
+      if (myReady && opponentReady) {
+        statusEl.textContent = '⚡ Both players ready! Executing play...';
+        statusEl.classList.remove('hidden', 'waiting');
+      } else if (myReady && !opponentReady) {
+        statusEl.textContent = '✅ Waiting for opponent to confirm...';
         statusEl.classList.remove('hidden');
         statusEl.classList.add('waiting');
-      } else if (!myCard) {
-        statusEl.textContent = isOffense ? '🏈 Select your offensive play' : '🛡️ Select your defensive play';
-        statusEl.classList.remove('hidden', 'waiting');
+      } else if (!myReady && opponentReady) {
+        statusEl.textContent = '⏳ Opponent is ready! Your turn...';
+        statusEl.classList.remove('hidden');
+        statusEl.classList.add('waiting');
       } else {
         statusEl.classList.add('hidden');
       }
@@ -1149,6 +1275,7 @@
 
     async function executePlay() {
       if (!gameState.player1Card || !gameState.player2Card) return;
+      if (!gameState.player1Ready || !gameState.player2Ready) return;
       if (gameState.gameOver) return;
 
       const offenseCard = OFFENSE_CARDS[gameState.player1Card.playType][gameState.player1Card.cardType];
@@ -1243,14 +1370,11 @@
         }
       }
 
-      // Clear cards
+      // Clear cards and ready states
       newGameState.player1Card = null;
       newGameState.player2Card = null;
-
-      // Clear local card selections
-      document.querySelectorAll('.card').forEach(card => {
-        card.classList.remove('selected');
-      });
+      newGameState.player1Ready = false;
+      newGameState.player2Ready = false;
 
       // Update server
       const data = await fetchBinData();
